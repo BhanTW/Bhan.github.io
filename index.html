@@ -1,0 +1,42 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bhan's Blog</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap">
+</head>
+<body>
+
+  <div class="bhan-container">
+    <span class="bhan-text">BHAN</span>
+    <span class="sub-text">THE FISCH TIKTOKER</span>
+  </div>
+
+  <div id="blogDisplay" class="blog-display-container">
+    <h2>Recent Blog Posts</h2>
+    <div id="blogPosts">
+      <!-- Blog posts will be dynamically added here -->
+    </div>
+  </div>
+  
+  <div style="position: fixed; bottom: 0; width: 100%;">
+    <div id="blogAccess" class="blog-access-container">
+      <h2>bhan的Blog Post 編寫區(密碼不告訴你:)</h2>
+      <input type="password" id="passwordInput" placeholder="Password">
+      <button onclick="checkPassword()">Access Blog Creation</button>
+      <p id="message"></p>
+    </div>
+
+    <div id="blogCreation" class="blog-creation-container" style="display:none;">
+      <h2>Create New Blog Post</h2>
+      <input type="text" id="blogTitle" placeholder="Blog Title"><br><br>
+      <textarea id="blogContent" placeholder="Blog Content"></textarea><br><br>
+      <button onclick="createBlogPost()">Publish Blog Post</button>
+      <button onclick="returnToMain()">Return to Main Page</button>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
