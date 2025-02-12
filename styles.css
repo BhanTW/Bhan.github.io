@@ -10,7 +10,8 @@ body {
   background-image: url("black-wallpaper-to-set-as-background-23.jpg");
   background-size: cover;
   background-position: center;
-  overflow: hidden;
+  overflow: auto; 
+  min-height: 100vh; 
 }
 
 .bhan-container {
