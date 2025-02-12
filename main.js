@@ -25,8 +25,61 @@ document.addEventListener('DOMContentLoaded', () => {
     createStar();
   }
 
+  // Load blog posts from localStorage, if available
+  let blogPosts = [];
+  const storedBlogPosts = localStorage.getItem('blogPosts'); // Get item only once
+  if (storedBlogPosts) {
+      try {
+          blogPosts = JSON.parse(storedBlogPosts);
+          if (!Array.isArray(blogPosts)) { // Check if it's an array
+              blogPosts = []; // Reset to empty array if not
+              console.error("Stored blogPosts is not an array. Resetting.");
+          }
+      } catch (e) {
+          console.error("Error parsing blogPosts from localStorage:", e);
+          blogPosts = []; // Ensure it's an array even if parsing fails
+      }
+  } else {
+    blogPosts = []; // Ensure blogPosts is initialized as an array
+  }
+
   // Initial display of blog posts
-  displayBlogPosts();
+  window.displayBlogPosts = function() {
+      const blogPostsContainer = document.getElementById('blogPosts');
+      blogPostsContainer.innerHTML = ''; // Clear existing posts
+
+      if (Array.isArray(blogPosts)) {
+          blogPosts.forEach((post, index) => {
+              const postDiv = document.createElement('div');
+              postDiv.classList.add('blog-post');
+              postDiv.dataset.index = index; // Store the index for later use
+
+              const titleElement = document.createElement('h3');
+              titleElement.textContent = post.title;
+
+              const contentElement = document.createElement('p');
+              // Truncate content to a certain number of characters
+              const maxLength = 100;
+              if (post.content.length > maxLength) {
+                  contentElement.textContent = post.content.substring(0, maxLength) + '...';
+                  postDiv.classList.add('truncated'); // Add class for truncated posts
+              } else {
+                  contentElement.textContent = post.content;
+              }
+              
+              postDiv.addEventListener('click', function() {
+                  window.showFullBlogPost(this.dataset.index); // Call function to display full post
+              });
+
+              postDiv.appendChild(titleElement);
+              postDiv.appendChild(contentElement);
+              blogPostsContainer.appendChild(postDiv);
+          });
+      } else {
+          console.error("blogPosts is not an array:", blogPosts);
+      }
+  }
+  window.displayBlogPosts();
 
   // Make returnToMain available globally
   window.returnToMain = function() {
@@ -35,142 +88,113 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('passwordInput').value = '';
       document.getElementById('message').textContent = '';
   }
-});
 
-function checkPassword() {
-  const password = document.getElementById('passwordInput').value;
-  const message = document.getElementById('message');
-  const blogAccess = document.getElementById('blogAccess');
-  const blogCreation = document.getElementById('blogCreation');
+  window.checkPassword = function() {
+    const password = document.getElementById('passwordInput').value;
+    const message = document.getElementById('message');
+    const blogAccess = document.getElementById('blogAccess');
+    const blogCreation = document.getElementById('blogCreation');
 
-  if (password === 'BhanHohan7') {
-    message.textContent = 'Password Correct!';
-    blogAccess.style.display = 'none';
-    blogCreation.style.display = 'block';
-  } else {
-    message.textContent = 'Incorrect Password. Please try again.';
+    if (password === 'BhanHohan7') {
+      message.textContent = 'Password Correct!';
+      blogAccess.style.display = 'none';
+      blogCreation.style.display = 'block';
+    } else {
+      message.textContent = 'Incorrect Password. Please try again.';
+    }
   }
-}
 
-let blogPosts = []; // Array to store blog posts
+  window.createBlogPost = function() {
+      const title = document.getElementById('blogTitle').value;
+      const content = document.getElementById('blogContent').value;
 
-function createBlogPost() {
-    const title = document.getElementById('blogTitle').value;
-    const content = document.getElementById('blogContent').value;
+      // Create blog post object
+      const blogPost = {
+          title: title,
+          content: content,
+          comments: [] // Initialize an empty array for comments
+      };
 
-    // Create blog post object
-    const blogPost = {
-        title: title,
-        content: content,
-        comments: [] // Initialize an empty array for comments
-    };
+      // Add the new blog post to the array
+      blogPosts.push(blogPost);
 
-    // Add the new blog post to the array
-    blogPosts.push(blogPost);
+      // Save blog posts to localStorage
+      localStorage.setItem('blogPosts', JSON.stringify(blogPosts));
 
-    // Update the displayed blog posts
-    displayBlogPosts();
+      // Update the displayed blog posts
+      window.displayBlogPosts();
 
-    // Clear the input fields after submitting
-    document.getElementById('blogTitle').value = '';
-    document.getElementById('blogContent').value = '';
+      // Clear the input fields after submitting
+      document.getElementById('blogTitle').value = '';
+      document.getElementById('blogContent').value = '';
 
-    // Return to main page after creating post
-    returnToMain();
-}
+      // Return to main page after creating post
+      window.returnToMain();
+  }
 
-function displayBlogPosts() {
-    const blogPostsContainer = document.getElementById('blogPosts');
-    blogPostsContainer.innerHTML = ''; // Clear existing posts
+  window.showFullBlogPost = function(index) {
+    const post = blogPosts[index];
+    const modal = document.createElement('div');
+    modal.classList.add('modal');
 
-    blogPosts.forEach((post, index) => {
-        const postDiv = document.createElement('div');
-        postDiv.classList.add('blog-post');
-        postDiv.dataset.index = index; // Store the index for later use
+    const modalContent = document.createElement('div');
+    modalContent.classList.add('modal-content');
+    modalContent.dataset.index = index;
 
-        const titleElement = document.createElement('h3');
-        titleElement.textContent = post.title;
+    const closeButton = document.createElement('span');
+    closeButton.classList.add('close-button');
+    closeButton.innerHTML = '&times;'; // "X" symbol
+    closeButton.onclick = () => modal.remove();
 
-        const contentElement = document.createElement('p');
-        // Truncate content to a certain number of characters
-        const maxLength = 100;
-        if (post.content.length > maxLength) {
-            contentElement.textContent = post.content.substring(0, maxLength) + '...';
-            postDiv.classList.add('truncated'); // Add class for truncated posts
-        } else {
-            contentElement.textContent = post.content;
-        }
-        
-        postDiv.addEventListener('click', function() {
-            showFullBlogPost(this.dataset.index); // Call function to display full post
-        });
+    const titleElement = document.createElement('h2');
+    titleElement.textContent = post.title;
 
-        postDiv.appendChild(titleElement);
-        postDiv.appendChild(contentElement);
-        blogPostsContainer.appendChild(postDiv);
+    const contentElement = document.createElement('p');
+    contentElement.textContent = post.content;
+
+    // Comments Section
+    const commentsSection = document.createElement('div');
+    commentsSection.classList.add('comments-section');
+
+    // Display existing comments
+    const commentsList = document.createElement('ul');
+    commentsList.classList.add('comments-list');
+    post.comments.forEach(comment => {
+        const commentItem = document.createElement('li');
+        commentItem.textContent = comment;
+        commentsList.appendChild(commentItem);
     });
-}
+    commentsSection.appendChild(commentsList);
 
-function showFullBlogPost(index) {
-  const post = blogPosts[index];
-  const modal = document.createElement('div');
-  modal.classList.add('modal');
+    // Add comment input
+    const commentInput = document.createElement('input');
+    commentInput.type = 'text';
+    commentInput.placeholder = 'Add a comment';
+    commentInput.classList.add('comment-input');
 
-  const modalContent = document.createElement('div');
-  modalContent.classList.add('modal-content');
-  modalContent.dataset.index = index;
+      // Add comment button
+    const commentButton = document.createElement('button');
+    commentButton.textContent = 'Post Comment';
+    commentButton.onclick = () => {
+        const commentText = commentInput.value.trim();
+        if (commentText !== '') {
+            post.comments.push(commentText);
+             // Save blog posts to localStorage after adding a comment
+            localStorage.setItem('blogPosts', JSON.stringify(blogPosts));
+            commentInput.value = '';
+            modal.remove();
+            window.displayBlogPosts();
+            window.showFullBlogPost(index); // Re-open the modal to show the new comment
+        }
+    };
+    commentsSection.appendChild(commentInput);
+    commentsSection.appendChild(commentButton);
 
-  const closeButton = document.createElement('span');
-  closeButton.classList.add('close-button');
-  closeButton.innerHTML = '&times;'; // "X" symbol
-  closeButton.onclick = () => modal.remove();
-
-  const titleElement = document.createElement('h2');
-  titleElement.textContent = post.title;
-
-  const contentElement = document.createElement('p');
-  contentElement.textContent = post.content;
-
-  // Comments Section
-  const commentsSection = document.createElement('div');
-  commentsSection.classList.add('comments-section');
-
-  // Display existing comments
-  const commentsList = document.createElement('ul');
-  commentsList.classList.add('comments-list');
-  post.comments.forEach(comment => {
-      const commentItem = document.createElement('li');
-      commentItem.textContent = comment;
-      commentsList.appendChild(commentItem);
-  });
-  commentsSection.appendChild(commentsList);
-
-  // Add comment input
-  const commentInput = document.createElement('input');
-  commentInput.type = 'text';
-  commentInput.placeholder = 'Add a comment';
-  commentInput.classList.add('comment-input');
-
-    // Add comment button
-  const commentButton = document.createElement('button');
-  commentButton.textContent = 'Post Comment';
-  commentButton.onclick = () => {
-      const commentText = commentInput.value.trim();
-      if (commentText !== '') {
-          post.comments.push(commentText);
-          commentInput.value = '';
-          modal.remove();
-          displayBlogPosts();
-          showFullBlogPost(index); // Re-open the modal to show the new comment
-      }
-  };
-  commentsSection.appendChild(commentInput);
-  commentsSection.appendChild(commentButton);
-
-  modalContent.appendChild(closeButton);
-  modalContent.appendChild(titleElement);
-  modalContent.appendChild(contentElement);
-  modalContent.appendChild(commentsSection);
-  modal.appendChild(modalContent);
-  document.body.appendChild(modal);
-}
+    modalContent.appendChild(closeButton);
+    modalContent.appendChild(titleElement);
+    modalContent.appendChild(contentElement);
+    modalContent.appendChild(commentsSection);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+  }
+});
